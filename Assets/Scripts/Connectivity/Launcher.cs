@@ -26,6 +26,13 @@ namespace Com.BlackRavenGames.Dodgeball
         #region Private Fields
         //This client's version number. Users are separated from each other by gameVersion (which allows you to make breaking changes).
         private string gameVersion = "1";
+
+        /// <summary>
+        /// Keep track of the current process. Since connection is asynchronous and is based on several callbacks from Photon,
+        /// we need to keep track of this to properly adjust the behavior when we receive call back by Photon.
+        /// Typically this is used for the OnConnectedToMaster() callback.
+        /// </summary>
+        private bool isConnecting;
         #endregion
 
         #region MonoBehaviour CallBacks
@@ -44,14 +51,20 @@ namespace Com.BlackRavenGames.Dodgeball
         #endregion
 
         #region MonoBehaviourPunCallbacks Callbacks
-
-
         public override void OnConnectedToMaster()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnConnectedToMaster() was called by PUN");
 
             // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
-            PhotonNetwork.JoinRandomRoom();
+            // we don't want to do anything if we are not attempting to join a room.
+            // this case where isConnecting is false is typically when you lost or quit the game, when this level is loaded, OnConnectedToMaster will be called, in that case
+            // we don't want to do anything.
+            if (isConnecting)
+            {
+                // #Critical: The first we try to do is to join a potential existing room. If there is, good, else, we'll be called back with OnJoinRandomFailed()
+                PhotonNetwork.JoinRandomRoom();
+                isConnecting = false;
+            }
         }
 
         public override void OnDisconnected(DisconnectCause cause)
@@ -60,6 +73,7 @@ namespace Com.BlackRavenGames.Dodgeball
             controlPanel.SetActive(true);
 
             Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by PUN with reason {0}", cause);
+            isConnecting = false;
         }
 
         public override void OnJoinRandomFailed(short returnCode, string message)
@@ -73,6 +87,17 @@ namespace Com.BlackRavenGames.Dodgeball
         public override void OnJoinedRoom()
         {
             Debug.Log("PUN Basics Tutorial/Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
+            
+            // #Critical: We only load if we are the first player, else we rely on `PhotonNetwork.AutomaticallySyncScene` to sync our instance scene.
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+            {
+                Debug.Log("We load the 'Room for 1' ");
+
+
+                // #Critical
+                // Load the Room Level.
+                PhotonNetwork.LoadLevel("Room for 1");
+            }
         }
         #endregion
 
@@ -96,7 +121,7 @@ namespace Com.BlackRavenGames.Dodgeball
             else
             {
                 // #Critical, we must first and foremost connect to Photon Online Server.
-                PhotonNetwork.ConnectUsingSettings();
+                isConnecting = PhotonNetwork.ConnectUsingSettings();
                 PhotonNetwork.GameVersion = gameVersion;
             }
         }
