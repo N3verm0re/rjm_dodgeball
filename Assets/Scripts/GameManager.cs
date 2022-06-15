@@ -25,8 +25,7 @@ namespace Com.BlackRavenGames.Dodgeball
 
             if (PhotonNetwork.IsMasterClient)
             {
-                Debug.LogFormat("OnPlayerEnteredRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient); // called before OnPlayerLeftRoom
-
+                Debug.LogFormat("OnPlayerEnteredRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient); // called before 
 
                 LoadArena();
             }
@@ -40,7 +39,6 @@ namespace Com.BlackRavenGames.Dodgeball
             if (PhotonNetwork.IsMasterClient)
             {
                 Debug.LogFormat("OnPlayerLeftRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient); // called before OnPlayerLeftRoom
-
 
                 LoadArena();
             }

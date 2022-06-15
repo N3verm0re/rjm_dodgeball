@@ -93,7 +93,6 @@ namespace Com.BlackRavenGames.Dodgeball
             {
                 Debug.Log("We load the 'Room for 1' ");
 
-
                 // #Critical
                 // Load the Room Level.
                 PhotonNetwork.LoadLevel("Room for 1");
